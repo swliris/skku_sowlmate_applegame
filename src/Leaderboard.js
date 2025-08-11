@@ -79,7 +79,7 @@ const Leaderboard = () => {
         }}
       >
         <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <img src="/logo192.png" alt="Apple Game Logo" style={{ width: 80, height: 80, marginBottom: 16 }} />
+          <img src={process.env.PUBLIC_URL + '/logo192.png'} alt="Apple Game Logo" style={{ width: 80, height: 80, marginBottom: 16 }} />
           <Typography variant="h4" component="h1" gutterBottom>
             사과게임 랭킹
           </Typography>
