@@ -12,10 +12,16 @@ import {
   Box,
   CircularProgress,
   Alert,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { supabase } from './supabaseClient';
+import { motion } from 'framer-motion';
 
 const maskStudentId = (id) => {
   if (typeof id !== 'string' || id.length !== 10) {
@@ -38,6 +44,7 @@ const Leaderboard = () => {
   const [scores, setScores] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [openHowToPlay, setOpenHowToPlay] = useState(false); // State for modal
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,6 +78,29 @@ const Leaderboard = () => {
     }
   };
 
+  const handleOpenHowToPlay = () => {
+    setOpenHowToPlay(true);
+  };
+
+  const handleCloseHowToPlay = () => {
+    setOpenHowToPlay(false);
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper
@@ -86,6 +116,14 @@ const Leaderboard = () => {
           <Typography variant="h4" component="h1" gutterBottom>
             사과게임 랭킹
           </Typography>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={handleOpenHowToPlay}
+            sx={{ mt: 2, mb: 2 }}
+          >
+            게임 참여 방법
+          </Button>
         </Box>
         {error && <Alert severity="error">{error}</Alert>}
         <TableContainer component={Paper} sx={{ borderRadius: '12px' }}>
@@ -98,7 +136,7 @@ const Leaderboard = () => {
                 <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>최고 점수</TableCell>
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody component={motion.tbody} variants={containerVariants} initial="hidden" animate="visible">
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={4} align="center" sx={{ p: 4 }}>
@@ -108,8 +146,12 @@ const Leaderboard = () => {
                 </TableRow>
               ) : scores.length > 0 ? (
                 scores.map((player, index) => (
-                  <TableRow
+                  <motion.tr
                     key={player.student_id}
+                    variants={itemVariants}
+                    whileHover={{ y: -3, backgroundColor: 'rgba(0, 0, 0, 0.03)' }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    style={{ display: 'table-row' }} // Ensure motion.tr renders as table-row
                     sx={{ '&:nth-of-type(odd)': { backgroundColor: (theme) => theme.palette.action.hover } }}
                   >
                     <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', width: '60px' }}>
@@ -126,12 +168,15 @@ const Leaderboard = () => {
                     <TableCell align="right" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                       {player.max_score}
                     </TableCell>
-                  </TableRow>
+                  </motion.tr>
                 ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} align="center" sx={{ p: 4 }}>
-                    <Typography>데이터가 없습니다.</Typography>
+                    <Box sx={{ my: 4, color: 'text.secondary' }}>
+                      <Typography variant="h6" gutterBottom>아직 등록된 점수가 없습니다.</Typography>
+                      <Typography variant="body2">대회에 참가하여 리더보드를 채워보세요!</Typography>
+                    </Box>
                   </TableCell>
                 </TableRow>
               )}
@@ -139,7 +184,26 @@ const Leaderboard = () => {
           </Table>
         </TableContainer>
       </Paper>
-      
+      <Dialog open={openHowToPlay} onClose={handleCloseHowToPlay}>
+        <DialogTitle>E-Sports 사과게임 참여 방법</DialogTitle>
+        <DialogContent dividers>
+          <Typography gutterBottom>
+            - 기간: 2025. 9. 8.(월) - 9. 10.(수)
+          </Typography>
+          <Typography gutterBottom>
+            &nbsp;&nbsp;&nbsp;(매일 13시부터 17시까지)
+          </Typography>
+          <Typography gutterBottom>
+            - 장소: 제2공학관 지하1층 26B13C호
+          </Typography> 
+          <Typography>
+            - 개인 태블릿이나 휴대폰 등을 지참하여 학생회에게 문의하여 게임을 진행합니다. 최고 점수를 갱신하여 상금에 도전하세요!
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseHowToPlay}>닫기</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
