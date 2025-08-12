@@ -10,7 +10,7 @@ import {
   TableRow,
   Paper,
   Box,
-  Button,
+  CircularProgress,
   Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -37,10 +37,12 @@ const maskName = (name) => {
 const Leaderboard = () => {
   const [scores, setScores] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
+      setLoading(true);
       const { data, error } = await supabase.rpc('get_leaderboard');
 
       if (error) {
@@ -50,6 +52,7 @@ const Leaderboard = () => {
       } else {
         setScores(data);
       }
+      setLoading(false);
     };
 
     fetchLeaderboard();
@@ -96,7 +99,14 @@ const Leaderboard = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {scores.length > 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" sx={{ p: 4 }}>
+                    <CircularProgress />
+                    <Typography sx={{ mt: 2 }}>리더보드를 불러오는 중...</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : scores.length > 0 ? (
                 scores.map((player, index) => (
                   <TableRow
                     key={player.student_id}
@@ -121,7 +131,7 @@ const Leaderboard = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} align="center" sx={{ p: 4 }}>
-                    <Typography>아직 등록된 점수가 없습니다.</Typography>
+                    <Typography>데이터가 없습니다.</Typography>
                   </TableCell>
                 </TableRow>
               )}
