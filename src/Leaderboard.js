@@ -17,10 +17,22 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Divider,
+  TextField,
 } from '@mui/material';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import MenuIcon from '@mui/icons-material/Menu';
 import SettingsIcon from '@mui/icons-material/Settings';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { supabase } from './supabaseClient';
 import { motion } from 'framer-motion';
 
@@ -45,7 +57,11 @@ const Leaderboard = () => {
   const [scores, setScores] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [openHowToPlay, setOpenHowToPlay] = useState(false); // State for modal
+  const [openHowToPlay, setOpenHowToPlay] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -64,6 +80,12 @@ const Leaderboard = () => {
     };
 
     fetchLeaderboard();
+  }, []);
+
+  useEffect(() => {
+    // Check if user is logged in from localStorage
+    const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+    setIsLoggedIn(adminLoggedIn);
   }, []);
 
   const getMedalColor = (rank) => {
@@ -85,6 +107,38 @@ const Leaderboard = () => {
 
   const handleCloseHowToPlay = () => {
     setOpenHowToPlay(false);
+  };
+
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+
+    const adminUsername = process.env.REACT_APP_ADMIN_USERNAME;
+    const adminPassword = process.env.REACT_APP_ADMIN_PASSWORD;
+
+    if (loginForm.username === adminUsername && loginForm.password === adminPassword) {
+      setIsLoggedIn(true);
+      localStorage.setItem('adminLoggedIn', 'true');
+      setLoginForm({ username: '', password: '' });
+      setDrawerOpen(false);
+    } else {
+      setLoginError('아이디 또는 비밀번호가 잘못되었습니다.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('adminLoggedIn');
+    setDrawerOpen(false);
+  };
+
+  const handleAdminClick = () => {
+    navigate('/admin');
+    setDrawerOpen(false);
   };
 
   const containerVariants = {
@@ -114,9 +168,9 @@ const Leaderboard = () => {
         }}
       >
         <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
-          <Link to="/admin">
-            <SettingsIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
-          </Link>
+          <IconButton onClick={handleDrawerToggle} color="primary">
+            <MenuIcon />
+          </IconButton>
         </Box>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <img src={process.env.PUBLIC_URL + '/logo192.png'} alt="Apple Game Logo" style={{ width: 80, height: 80, marginBottom: 16 }} />
@@ -211,6 +265,76 @@ const Leaderboard = () => {
           <Button onClick={handleCloseHowToPlay}>닫기</Button>
         </DialogActions>
       </Dialog>
+      
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={handleDrawerToggle}
+      >
+        <Box sx={{ width: 250, p: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            관리자 메뉴
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          
+          {!isLoggedIn ? (
+            <Box component="form" onSubmit={handleLogin}>
+              <TextField
+                fullWidth
+                label="아이디"
+                value={loginForm.username}
+                onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                margin="normal"
+                size="small"
+              />
+              <TextField
+                fullWidth
+                label="비밀번호"
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                margin="normal"
+                size="small"
+              />
+              {loginError && (
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  {loginError}
+                </Alert>
+              )}
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                startIcon={<LoginIcon />}
+                sx={{ mt: 2 }}
+              >
+                로그인
+              </Button>
+            </Box>
+          ) : (
+            <List>
+              <ListItem>
+                <ListItemText 
+                  primary="관리자로 로그인됨" 
+                />
+              </ListItem>
+              <Divider />
+              <ListItem button onClick={handleAdminClick}>
+                <ListItemIcon>
+                  <AdminPanelSettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary="관리자 페이지" />
+              </ListItem>
+              <ListItem button onClick={handleLogout}>
+                <ListItemIcon>
+                  <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText primary="로그아웃" />
+              </ListItem>
+            </List>
+          )}
+        </Box>
+      </Drawer>
     </Container>
   );
 };

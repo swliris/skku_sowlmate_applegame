@@ -10,11 +10,9 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 const Admin = () => {
-  const [session, setSession] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [name, setName] = useState('');
   const [studentId, setStudentId] = useState('');
@@ -26,40 +24,25 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Handle OAuth callback in HashRouter environment
-    const handleOAuthCallback = async () => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      
-      if (hashParams.has('access_token')) {
-        // Clean up the URL hash to remove OAuth tokens
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search + '#/admin');
-      }
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-    };
-
-    handleOAuthCallback();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    // Check if user is logged in from localStorage
+    const adminLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+    setIsLoggedIn(adminLoggedIn);
   }, []);
 
   useEffect(() => {
-    if (session) {
+    if (isLoggedIn) {
       setTimeout(() => {
         if (nameInputRef.current) {
           nameInputRef.current.focus();
         }
       }, 100);
     }
-  }, [session]);
+  }, [isLoggedIn]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('adminLoggedIn');
+    navigate('/');
   };
 
   const handleSubmit = async (e) => {
@@ -113,29 +96,23 @@ const Admin = () => {
     }
   };
 
-  if (!session) {
+  if (!isLoggedIn) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
         <Paper elevation={3} sx={{ p: 4, borderRadius: '16px' }}>
           <Typography variant="h5" component="h1" align="center" gutterBottom>
-            관리자 로그인
+            접근 권한이 없습니다
+          </Typography>
+          <Typography variant="body1" align="center" sx={{ mt: 2, mb: 3 }}>
+            관리자 페이지에 접근하려면 로그인이 필요합니다.
           </Typography>
           <Button
             variant="contained"
             fullWidth
-            startIcon={<img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo" style={{ marginRight: 8 }} />}
-            sx={{
-              mt: 3,
-              mb: 2,
-              backgroundColor: '#4285F4',
-              color: 'white',
-              '&:hover': {
-                backgroundColor: '#357AE8',
-              },
-            }}
-            onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/skku_sowlmate_applegame/#/admin' } })}
+            onClick={() => navigate('/')}
+            sx={{ mt: 2 }}
           >
-            Google로 로그인
+            메인 페이지로 돌아가기
           </Button>
         </Paper>
       </Container>
@@ -201,7 +178,7 @@ const Admin = () => {
         </Box>
       </Paper>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-        <Button variant="outlined" onClick={() => navigate('/skku_sowlmate_applegame')}>
+        <Button variant="outlined" onClick={() => navigate('/')}>
           리더보드로 돌아가기
         </Button>
         <Button variant="contained" color="secondary" onClick={handleLogout}>
