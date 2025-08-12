@@ -18,7 +18,8 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import SettingsIcon from '@mui/icons-material/Settings';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { supabase } from './supabaseClient';
 import { motion } from 'framer-motion';
@@ -109,8 +110,14 @@ const Leaderboard = () => {
           p: { xs: 2, sm: 4 },
           borderRadius: '16px',
           background: 'linear-gradient(145deg, #ffffff, #e6e6e6)',
+          position: 'relative',
         }}
       >
+        <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+          <Link to="/admin">
+            <SettingsIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+          </Link>
+        </Box>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <img src={process.env.PUBLIC_URL + '/logo192.png'} alt="Apple Game Logo" style={{ width: 80, height: 80, marginBottom: 16 }} />
           <Typography variant="h4" component="h1" gutterBottom>
@@ -197,7 +204,7 @@ const Leaderboard = () => {
             - 장소: 제2공학관 지하1층 26B13C호
           </Typography> 
           <Typography>
-            - 개인 태블릿이나 휴대폰 등을 지참하여 학생회에게 문의하여 게임을 진행합니다. 최고 점수를 갱신하여 상금에 도전하세요!
+            - 개인 태블릿이나 휴대폰 등을 지참하여 학생회에게 문의 후 게임을 진행합니다. 최고 점수를 갱신하여 상금에 도전하세요!
           </Typography>
         </DialogContent>
         <DialogActions>

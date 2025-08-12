@@ -10,12 +10,11 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 const Admin = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [session, setSession] = useState(null);
 
   const [name, setName] = useState('');
   const [studentId, setStudentId] = useState('');
@@ -27,34 +26,40 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Focus the name input field when the user logs in
-    if (isLoggedIn) {
-      // Use a short timeout to ensure the element is rendered before focusing
+    // Handle OAuth callback in HashRouter environment
+    const handleOAuthCallback = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      
+      if (hashParams.has('access_token')) {
+        // Clean up the URL hash to remove OAuth tokens
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search + '#/admin');
+      }
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+    };
+
+    handleOAuthCallback();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (session) {
       setTimeout(() => {
         if (nameInputRef.current) {
           nameInputRef.current.focus();
         }
       }, 100);
     }
-  }, [isLoggedIn]);
+  }, [session]);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (
-      username === process.env.REACT_APP_ADMIN_ID &&
-      password === process.env.REACT_APP_ADMIN_PASSWORD
-    ) {
-      setIsLoggedIn(true);
-      setError('');
-    } else {
-      setError('아이디 또는 비밀번호가 잘못되었습니다.');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUsername('');
-    setPassword('');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   const handleSubmit = async (e) => {
@@ -108,48 +113,30 @@ const Admin = () => {
     }
   };
 
-  if (!isLoggedIn) {
+  if (!session) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
         <Paper elevation={3} sx={{ p: 4, borderRadius: '16px' }}>
           <Typography variant="h5" component="h1" align="center" gutterBottom>
             관리자 로그인
           </Typography>
-          <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="username"
-              label="아이디"
-              name="username"
-              autoComplete="username"
-              autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="비밀번호"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              로그인
-            </Button>
-          </Box>
+          <Button
+            variant="contained"
+            fullWidth
+            startIcon={<img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google logo" style={{ marginRight: 8 }} />}
+            sx={{
+              mt: 3,
+              mb: 2,
+              backgroundColor: '#4285F4',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: '#357AE8',
+              },
+            }}
+            onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/skku_sowlmate_applegame/#/admin' } })}
+          >
+            Google로 로그인
+          </Button>
         </Paper>
       </Container>
     );
