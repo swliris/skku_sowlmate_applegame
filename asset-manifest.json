@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/skku_sowlmate_applegame/static/css/main.e6c13ad2.css",
-    "main.js": "/skku_sowlmate_applegame/static/js/main.f7c3a57b.js",
+    "main.css": "/skku_sowlmate_applegame/static/css/main.553f6229.css",
+    "main.js": "/skku_sowlmate_applegame/static/js/main.fc453e94.js",
     "static/js/453.1bbd17e9.chunk.js": "/skku_sowlmate_applegame/static/js/453.1bbd17e9.chunk.js",
     "index.html": "/skku_sowlmate_applegame/index.html",
-    "main.e6c13ad2.css.map": "/skku_sowlmate_applegame/static/css/main.e6c13ad2.css.map",
-    "main.f7c3a57b.js.map": "/skku_sowlmate_applegame/static/js/main.f7c3a57b.js.map",
+    "main.553f6229.css.map": "/skku_sowlmate_applegame/static/css/main.553f6229.css.map",
+    "main.fc453e94.js.map": "/skku_sowlmate_applegame/static/js/main.fc453e94.js.map",
     "453.1bbd17e9.chunk.js.map": "/skku_sowlmate_applegame/static/js/453.1bbd17e9.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.e6c13ad2.css",
-    "static/js/main.f7c3a57b.js"
+    "static/css/main.553f6229.css",
+    "static/js/main.fc453e94.js"
   ]
 }
