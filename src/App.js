@@ -43,6 +43,7 @@ function App() {
               objectFit: 'contain',
             }}
           />
+          <p><strong>제9대 소프트웨어융합대학 학생회 솦꿉친구</strong></p>
         </Box>
       </Box>
     </ThemeProvider>
