@@ -9,7 +9,12 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minHeight: '100vh',
+        backgroundColor: '#ffffff',
+      }}>
         <Box component="main" sx={{ flexGrow: 1 }}>
           <Router>
             <Routes>
@@ -21,21 +26,20 @@ function App() {
         <Box
           component="footer"
           sx={{
-            py: 2,
+            py: 3,
             px: 2,
             mt: 'auto',
             textAlign: 'center',
-            borderTop: '1px solid',
-            borderColor: 'divider',
+            borderTop: '1px solid #e0e0e0',
+            backgroundColor: '#f8f9fa',
           }}
         >
-          {/* public 폴더에 student_council_logo.png 파일을 추가하세요. */}
           <img
             src={process.env.PUBLIC_URL + '/student_council_logo.png'}
             alt="학생회 로고"
             style={{
-              height: '50px', // 로고 높이 (가로 길이는 비율에 맞춰 자동 조절)
-              maxWidth: '90%', // 화면이 작아도 로고가 넘치지 않도록 설정
+              height: '50px',
+              maxWidth: '90%',
               objectFit: 'contain',
             }}
           />
