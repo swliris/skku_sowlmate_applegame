@@ -23,7 +23,6 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Divider,
   TextField,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +34,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import StarIcon from '@mui/icons-material/Star';
 import { supabase } from './supabaseClient';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const maskStudentId = (id) => {
   if (typeof id !== 'string' || id.length !== 10) {
@@ -44,15 +43,6 @@ const maskStudentId = (id) => {
   return `${id.substring(0, 6)}##${id.substring(8)}`;
 };
 
-const maskName = (name) => {
-  if (typeof name !== 'string' || name.length <= 1) {
-    return name;
-  }
-  if (name.length === 2) {
-    return `${name.substring(0, 1)}*`;
-  }
-  return `${name.substring(0, 1)}${'*'.repeat(name.length - 2)}${name.substring(name.length - 1)}`;
-};
 
 const removeDuplicateStudentIds = (data) => {
   if (!data || !Array.isArray(data)) {
@@ -354,7 +344,7 @@ const Leaderboard = () => {
                     fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
                     px: { xs: 1, sm: 2 },
                   }}>
-                    이름
+                    이름(닉네임)
                   </TableCell>
                   <TableCell align="right" sx={{ 
                     color: 'white', 
@@ -457,7 +447,7 @@ const Leaderboard = () => {
                         fontWeight: 500,
                         px: { xs: 0.5, sm: 1, md: 2 },
                       }}>
-                        {maskName(player.name)}
+                        {player.name}
                       </TableCell>
                       <TableCell align="right" sx={{
                         fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' },
