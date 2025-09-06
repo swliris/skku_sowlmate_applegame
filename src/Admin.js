@@ -125,13 +125,46 @@ const Admin = () => {
         <Typography variant="h5" component="h1" align="center" gutterBottom>
           점수 등록
         </Typography>
+        
+        <Alert 
+          severity="warning" 
+          sx={{ 
+            mt: 2, 
+            mb: 3,
+            backgroundColor: '#ffebee',
+            border: '1px solid #ef5350',
+            '& .MuiAlert-icon': {
+              color: '#d32f2f'
+            }
+          }}
+        >
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: '#d32f2f' }}>
+              주의사항
+            </Typography>
+            <Box component="ul" sx={{ 
+              margin: 0, 
+              paddingLeft: 2,
+              '& li': { 
+                marginBottom: 0.5,
+                fontSize: '0.9rem',
+                color: '#d32f2f'
+              }
+            }}>
+              <li>입력 후 되돌릴 수 없으니 오타에 주의</li>
+              <li>오류 발생 시, 문의사항 등은 임성우에게 질문</li>
+              <li>비밀번호 유출 주의</li>
+            </Box>
+          </Box>
+        </Alert>
+        
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
             required
             fullWidth
             id="name"
-            label="이름"
+            label="이름(닉네임)"
             name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}

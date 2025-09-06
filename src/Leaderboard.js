@@ -54,6 +54,37 @@ const maskName = (name) => {
   return `${name.substring(0, 1)}${'*'.repeat(name.length - 2)}${name.substring(name.length - 1)}`;
 };
 
+const removeDuplicateStudentIds = (data) => {
+  if (!data || !Array.isArray(data)) {
+    return [];
+  }
+  
+  const uniqueStudents = new Map();
+  
+  data.forEach(player => {
+    const existingPlayer = uniqueStudents.get(player.student_id);
+    
+    if (!existingPlayer || player.max_score > existingPlayer.max_score) {
+      uniqueStudents.set(player.student_id, player);
+    }
+  });
+  
+  return Array.from(uniqueStudents.values()).sort((a, b) => b.max_score - a.max_score);
+};
+
+const calculateRank = (scores, currentIndex) => {
+  if (currentIndex === 0) return 1;
+  
+  const currentScore = scores[currentIndex].max_score;
+  const previousScore = scores[currentIndex - 1].max_score;
+  
+  if (currentScore === previousScore) {
+    return calculateRank(scores, currentIndex - 1);
+  }
+  
+  return currentIndex + 1;
+};
+
 const Leaderboard = () => {
   const [scores, setScores] = useState([]);
   const [error, setError] = useState(null);
@@ -75,7 +106,8 @@ const Leaderboard = () => {
         setError('리더보드를 불러오는 중 오류가 발생했습니다.');
         setScores([]);
       } else {
-        setScores(data);
+        const uniqueScores = removeDuplicateStudentIds(data);
+        setScores(uniqueScores);
       }
       setLoading(false);
     };
@@ -364,60 +396,62 @@ const Leaderboard = () => {
                     </TableCell>
                   </TableRow>
                 ) : scores.length > 0 ? (
-                  scores.map((player, index) => (
-                    <motion.tr
-                      key={player.student_id}
-                      variants={itemVariants}
-                      whileHover={{ 
-                        y: -2, 
-                        scale: 1.02,
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                      }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      style={{ 
-                        display: 'table-row',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <TableCell component="th" scope="row" sx={{ 
-                        fontWeight: 'bold', 
-                        width: { xs: '50px', sm: '60px', md: '80px' },
-                        px: { xs: 0.5, sm: 1, md: 2 },
-                      }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {index < 3 ? (
-                            <motion.div
-                              animate={{ 
-                                rotate: [0, 10, -10, 0],
-                                scale: [1, 1.1, 1],
-                              }}
-                              transition={{ 
-                                duration: 2, 
-                                repeat: Infinity,
-                                delay: index * 0.2,
-                              }}
-                            >
-                              <EmojiEventsIcon 
-                                style={{
-                                  ...getMedalColor(index),
-                                  fontSize: window.innerWidth < 600 ? '1.5rem' : '2rem',
-                                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                                }} 
-                              />
-                            </motion.div>
-                          ) : (
-                            <Typography 
-                              sx={{ 
-                                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' }, 
-                                fontWeight: 'bold',
-                                color: 'text.primary',
-                              }}
-                            >
-                              {index + 1}
-                            </Typography>
-                          )}
-                        </Box>
-                      </TableCell>
+                  scores.map((player, index) => {
+                    const currentRank = calculateRank(scores, index);
+                    return (
+                      <motion.tr
+                        key={player.student_id}
+                        variants={itemVariants}
+                        whileHover={{ 
+                          y: -2, 
+                          scale: 1.02,
+                          backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        style={{ 
+                          display: 'table-row',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <TableCell component="th" scope="row" sx={{ 
+                          fontWeight: 'bold', 
+                          width: { xs: '50px', sm: '60px', md: '80px' },
+                          px: { xs: 0.5, sm: 1, md: 2 },
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {currentRank <= 3 ? (
+                              <motion.div
+                                animate={{ 
+                                  rotate: [0, 10, -10, 0],
+                                  scale: [1, 1.1, 1],
+                                }}
+                                transition={{ 
+                                  duration: 2, 
+                                  repeat: Infinity,
+                                  delay: (currentRank - 1) * 0.2,
+                                }}
+                              >
+                                <EmojiEventsIcon 
+                                  style={{
+                                    ...getMedalColor(currentRank - 1),
+                                    fontSize: window.innerWidth < 600 ? '1.5rem' : '2rem',
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                                  }} 
+                                />
+                              </motion.div>
+                            ) : (
+                              <Typography 
+                                sx={{ 
+                                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' }, 
+                                  fontWeight: 'bold',
+                                  color: 'text.primary',
+                                }}
+                              >
+                                {currentRank}
+                              </Typography>
+                            )}
+                          </Box>
+                        </TableCell>
                       <TableCell sx={{
                         fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
                         fontWeight: 500,
@@ -432,28 +466,29 @@ const Leaderboard = () => {
                       }}>
                         {maskStudentId(player.student_id)}
                       </TableCell>
-                      <TableCell align="right" sx={{ 
-                        fontWeight: 'bold', 
-                        fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.1rem' },
-                        color: index < 3 ? 'secondary.main' : 'primary.main',
-                        pl: { xs: 0.5, sm: 1, md: 2 },
-                        pr: { xs: 2, sm: 3, md: 3 },
-                      }}>
-                        <motion.span
-                          animate={index < 3 ? { 
-                            textShadow: [
-                              '0 0 5px rgba(255, 193, 7, 0.5)',
-                              '0 0 10px rgba(255, 193, 7, 0.8)',
-                              '0 0 5px rgba(255, 193, 7, 0.5)',
-                            ]
-                          } : {}}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        >
-                          {player.max_score.toLocaleString()}
-                        </motion.span>
-                      </TableCell>
-                    </motion.tr>
-                  ))
+                        <TableCell align="right" sx={{ 
+                          fontWeight: 'bold', 
+                          fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.1rem' },
+                          color: currentRank <= 3 ? 'secondary.main' : 'primary.main',
+                          pl: { xs: 0.5, sm: 1, md: 2 },
+                          pr: { xs: 2, sm: 3, md: 3 },
+                        }}>
+                          <motion.span
+                            animate={currentRank <= 3 ? { 
+                              textShadow: [
+                                '0 0 5px rgba(255, 193, 7, 0.5)',
+                                '0 0 10px rgba(255, 193, 7, 0.8)',
+                                '0 0 5px rgba(255, 193, 7, 0.5)',
+                              ]
+                            } : {}}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            {player.max_score.toLocaleString()}
+                          </motion.span>
+                        </TableCell>
+                      </motion.tr>
+                    );
+                  })
                 ) : (
                   <TableRow>
                     <TableCell colSpan={4} align="center" sx={{ p: 6 }}>
@@ -530,6 +565,9 @@ const Leaderboard = () => {
               <strong style={{ color: '#FFA000' }}>
                 &nbsp;최고 점수를 갱신하여 상금에 도전하세요! 💰
               </strong>
+            </li>
+            <li>
+              사전 신청하지 않았어도 현장에서 참여 가능합니다. 많은 참여 부탁드려요!
             </li>
           </Box>
         </DialogContent>
